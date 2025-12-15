@@ -9,10 +9,47 @@ public class Main {
     static String[] commodities = {"Gold", "Oil", "Silver", "Wheat", "Copper"};
     static String[] months = {"January","February","March","April","May","June",
                               "July","August","September","October","November","December"};
+    static int[][][] allData = new int[MONTHS][DAYS][COMMS];
+    public static int getCommodityIndex(String comm){
+        for(int i = 0;i< commodities.length;i++){
+            if(commodities[i].equals(comm)){
+                return i;
+
+            }
+        }
+        return -1;
+    }
+
     
 
     // ======== REQUIRED METHOD LOAD DATA (Students fill this) ========
-    public static void loadData()    {
+    public static void loadData() {
+        for (int m = 0; m < MONTHS; m++) {
+            String filename = "Data_Files/" + months[m] + ".txt";
+
+            try {
+                Scanner sc = new Scanner(new File(filename));
+
+                while (sc.hasNextLine()) {
+                    String line = sc.nextLine();
+                    String[] parts = line.split(",");
+
+                    if (parts.length == 3) {
+                        int day = Integer.parseInt(parts[0].trim()) - 1; //String to int.-1 because index between 0-27
+                        String commName = parts[1].trim();
+                        int commIndex = getCommodityIndex(commName);
+                        int profit = Integer.parseInt(parts[2].trim());
+
+                        if (day >= 0 && day < DAYS && commIndex != -1) {
+                            allData[m][day][commIndex] = profit;
+                        }
+                    }
+                }
+                sc.close();
+            } catch (FileNotFoundException e) {
+                // Dosya bulunamazsa sessiz kal
+            }
+        }
     }
 
     // ======== 10 REQUIRED METHODS (Students fill these) ========
