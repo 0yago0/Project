@@ -26,20 +26,20 @@ public class Main {
             String filename = "Data_Files/" + months[m] + ".txt";
 
             try {
-                Scanner sc = new Scanner(new File(filename)); //kodu okuyan
+                Scanner sc = new Scanner(new File(filename));
 
                 while (sc.hasNextLine()) {
                     String line = sc.nextLine();
-                    String[] parts = line.split(","); // yazıyı düzeltip virgülle bölüyor
+                    String[] parts = line.split(",");
 
                     if (parts.length == 3) {
-                        int day = Integer.parseInt(parts[0].trim()) - 1; // -1 sebebi indexten
+                        int day = Integer.parseInt(parts[0].trim()) - 1;
                         String commName = parts[1].trim();
                         int commIndex = getCommodityIndex(commName);
-                        int profit = Integer.parseInt(parts[2].trim()); // inti okunan hale getirriyor
+                        int profit = Integer.parseInt(parts[2].trim());
 
                         if (day >= 0 && day < DAYS && commIndex != -1) {
-                            allData[m][day][commIndex] = profit;  // dayaları yerleştririyor
+                            allData[m][day][commIndex] = profit;
                         }
                     }
                 }
@@ -58,7 +58,7 @@ public class Main {
             return "INVALID_MONTH";
         }
 
-        int maxProfit = Integer.MIN_VALUE; // 0 yazmamamızın sebebi kar - de olabilir.
+        int maxProfit = Integer.MIN_VALUE;
         String bestCommName = "";
 
         for (int c = 0; c < COMMS; c++) {
@@ -70,7 +70,7 @@ public class Main {
 
             if (currentCommTotal > maxProfit) {
                 maxProfit = currentCommTotal;
-                bestCommName = commodities[c]; // eğer max profitten büyükse yeni max profit tanımalsın
+                bestCommName = commodities[c]; //
             }
         }
 
@@ -127,8 +127,25 @@ public class Main {
     }
 
     public static String bestMonthForCommodity(String comm) {
-        return "DUMMY";
+        int commIndex = getCommodityIndex(comm);
+        if(commIndex == -1){
+            return "INVALID_COMMODITY";
+        }
+        int maxProfit = Integer.MIN_VALUE;
+        int bestMonthIndex = -1;
+        for(int m = 0;m<MONTHS;m++) {
+            int currentMonthTotal = 0;
 
+            for (int d = 0; d < DAYS; d++) {
+                currentMonthTotal += allData[m][d][commIndex];
+
+                if(currentMonthTotal > maxProfit){
+                    maxProfit = currentMonthTotal;
+                    bestMonthIndex = m;
+                }
+            }
+        }
+        return months[bestMonthIndex];
     }
 
     public static int consecutiveLossDays(String comm) {
@@ -156,8 +173,6 @@ public class Main {
         loadData();
         System.out.println("Data loaded – ready for queries");
 
-        // Kendi testini yapmak istersen buraya kod ekleyebilirsin
-        // Örn: System.out.println(totalProfitOnDay(0, 15));
     }
 
 }
