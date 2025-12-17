@@ -26,20 +26,20 @@ public class Main {
             String filename = "Data_Files/" + months[m] + ".txt";
 
             try {
-                Scanner sc = new Scanner(new File(filename));
+                Scanner sc = new Scanner(new File(filename)); //kodu okuyan
 
                 while (sc.hasNextLine()) {
                     String line = sc.nextLine();
-                    String[] parts = line.split(",");
+                    String[] parts = line.split(","); // yazıyı düzeltip virgülle bölüyor
 
                     if (parts.length == 3) {
-                        int day = Integer.parseInt(parts[0].trim()) - 1;
+                        int day = Integer.parseInt(parts[0].trim()) - 1; // -1 sebebi indexten
                         String commName = parts[1].trim();
                         int commIndex = getCommodityIndex(commName);
-                        int profit = Integer.parseInt(parts[2].trim());
+                        int profit = Integer.parseInt(parts[2].trim()); // inti okunan hale getirriyor
 
                         if (day >= 0 && day < DAYS && commIndex != -1) {
-                            allData[m][day][commIndex] = profit;
+                            allData[m][day][commIndex] = profit;  // dayaları yerleştririyor
                         }
                     }
                 }
@@ -58,7 +58,7 @@ public class Main {
             return "INVALID_MONTH";
         }
 
-        int maxProfit = Integer.MIN_VALUE;
+        int maxProfit = Integer.MIN_VALUE; // 0 yazmamamızın sebebi kar - de olabilir.
         String bestCommName = "";
 
         for (int c = 0; c < COMMS; c++) {
@@ -70,7 +70,7 @@ public class Main {
 
             if (currentCommTotal > maxProfit) {
                 maxProfit = currentCommTotal;
-                bestCommName = commodities[c];
+                bestCommName = commodities[c]; // eğer max profitten büyükse yeni max profit tanımalsın
             }
         }
 
@@ -83,7 +83,7 @@ public class Main {
             return -99999;
         }
 
-        int dayIndex = day - 1;
+        int dayIndex = day - 1; // 1.gün 0. index
         int total = 0;
 
         for (int c = 0; c < COMMS; c++) {
@@ -113,11 +113,22 @@ public class Main {
     }
 
     public static int commodityProfitInRange(String commodity, int from, int to) {
-        return 1234;
+        int commIndex = getCommodityIndex(commodity);
+        if(commIndex == -1 || from < 1 || to> DAYS || from > to){
+            return -9999;
+        }
+        int totalProfit = 0;
+        for(int m = 0;m<MONTHS; m++){
+            for(int d = from -1;d<to;d++){
+                totalProfit += allData[m][d][commIndex];
+            }
+        }
+        return totalProfit;
     }
 
     public static String bestMonthForCommodity(String comm) {
         return "DUMMY";
+
     }
 
     public static int consecutiveLossDays(String comm) {
