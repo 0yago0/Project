@@ -5,38 +5,37 @@ public class Main {
     static final int MONTHS = 12;
     static final int DAYS = 28;
     static final int COMMS = 5;
-    static String[] commodities = {"Gold", "Oil", "Silver", "Wheat", "Copper"};
-    static String[] months = {"January","February","March","April","May","June",
-            "July","August","September","October","November","December"};
 
+    static String[] months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+    static String[] commodities = {"Gold", "Oil", "Silver", "Copper", "Gas"};
     static int[][][] allData = new int[MONTHS][DAYS][COMMS];
 
+
+
+    // --- YARDIMCI METOTLAR ---
     public static int getCommodityIndex(String name) {
         for (int i = 0; i < commodities.length; i++) {
-            if (commodities[i].equals(name)) {
-                return i;
-            }
+            if (commodities[i].equalsIgnoreCase(name)) return i;
         }
         return -1;
     }
 
     public static void loadData() {
         for (int m = 0; m < MONTHS; m++) {
-            String filename = "Data_Files/" + months[m] + ".txt";
-
+            String filename = "Project/Data_Files/" + months[m] + ".txt";
             try {
                 Scanner sc = new Scanner(new File(filename));
-
                 while (sc.hasNextLine()) {
                     String line = sc.nextLine();
+                    if (line.startsWith("Day") || line.trim().isEmpty()) {
+                        continue;
+                    }
                     String[] parts = line.split(",");
-
                     if (parts.length == 3) {
                         int day = Integer.parseInt(parts[0].trim()) - 1;
                         String commName = parts[1].trim();
                         int commIndex = getCommodityIndex(commName);
                         int profit = Integer.parseInt(parts[2].trim());
-
                         if (day >= 0 && day < DAYS && commIndex != -1) {
                             allData[m][day][commIndex] = profit;
                         }
@@ -44,61 +43,58 @@ public class Main {
                 }
                 sc.close();
             } catch (FileNotFoundException e) {
-
+                System.out.println("HATA: " + filename + " bulunamadı!");
             }
         }
     }
 
-    // 1. O ay en çok kar eden emtia
+    // --- ANALİZ METOTLARI (1-10 SIRALI) ---
+
+
     public static String mostProfitableCommodityInMonth(int month) {
-        if (month < 0 || month >= MONTHS) {
-            return "INVALID_MONTH";
-        }
-
-        int maxProfit = Integer.MIN_VALUE;
-        String bestCommName = "";
-
+        if (month < 0 || month >= MONTHS) return "INVALID_MONTH";
+        long maxProfit = Long.MIN_VALUE;
+        String bestComm = "";
         for (int c = 0; c < COMMS; c++) {
-            int currentCommTotal = 0;
-            // Emtianın o aydaki toplam karını hesapla
-            for (int d = 0; d < DAYS; d++) {
-                currentCommTotal += allData[month][d][c];
-            }
-
-            if (currentCommTotal > maxProfit) {
-                maxProfit = currentCommTotal;
-                bestCommName = commodities[c]; //
+            long total = 0;
+            for (int d = 0; d < DAYS; d++) total += allData[month][d][c];
+            if (total > maxProfit) {
+                maxProfit = total;
+                bestComm = commodities[c];
             }
         }
-
-        return bestCommName + " " + maxProfit;
+        return bestComm + " " + maxProfit;
     }
-
-    // 2. Belirli bir gündeki toplam kar
     public static int totalProfitOnDay(int month, int day) {
         if (month < 0 || month >= MONTHS || day < 1 || day > DAYS) {
             return -99999;
         }
-
-        int dayIndex = day - 1; // 1.gün 0. index
         int total = 0;
-
-        for (int c = 0; c < COMMS; c++) {
-            total += allData[month][dayIndex][c];
+        for (int c = 0; c < COMMS; c++){
+            total += allData[month][day - 1][c];
         }
         return total;
     }
+    public static int commodityProfitInRange(String commodity, int from, int to) {
+        int index = getCommodityIndex(commodity);
+        if (index == -1 || from < 1 || to > DAYS || from > to){
+            return -9999;
+        }
+        int totalProfit = 0;
+        for (int m = 0; m < MONTHS; m++) {
+            for (int d = from - 1; d < to; d++){
+                totalProfit += allData[m][d][index];
+            }
+        }
+        return totalProfit;
+    }
 
-
-    // 4. Ayın en karlı günü
     public static int bestDayOfMonth(int month) {
-        if (month < 0 || month >= MONTHS) {
+        if (month < 0 || month >= MONTHS){
             return -1;
         }
-
         int maxProfit = Integer.MIN_VALUE;
         int bestDay = -1;
-
         for (int d = 1; d <= DAYS; d++) {
             int dailyTotal = totalProfitOnDay(month, d);
             if (dailyTotal > maxProfit) {
@@ -109,140 +105,131 @@ public class Main {
         return bestDay;
     }
 
-    public static int commodityProfitInRange(String commodity, int from, int to) {
-        int commIndex = getCommodityIndex(commodity);
-        if(commIndex == -1 || from < 1 || to> DAYS || from > to){
-            return -9999;
-        }
-        int totalProfit = 0;
-        for(int m = 0;m<MONTHS; m++){
-            for(int d = from -1;d<to;d++){
-                totalProfit += allData[m][d][commIndex];
-            }
-        }
-        return totalProfit;
-    }
-
     public static String bestMonthForCommodity(String comm) {
-        int commIndex = getCommodityIndex(comm);
-        if(commIndex == -1){
+        int index = getCommodityIndex(comm);
+        if (index == -1){
             return "INVALID_COMMODITY";
         }
-        int maxProfit = Integer.MIN_VALUE;
+        long maxProfit = Long.MIN_VALUE;
         int bestMonthIndex = -1;
-        for(int m = 0;m<MONTHS;m++) {
-            int currentMonthTotal = 0;
-
-            for (int d = 0; d < DAYS; d++) {
-                currentMonthTotal += allData[m][d][commIndex];
-
-                if(currentMonthTotal > maxProfit){
-                    maxProfit = currentMonthTotal;
-                    bestMonthIndex = m;
-                }
+        for (int m = 0; m < MONTHS; m++) {
+            long currentMonthTotal = 0;
+            for (int d = 0; d < DAYS; d++){
+                currentMonthTotal += allData[m][d][index];
+            }
+            if (currentMonthTotal > maxProfit) {
+                maxProfit = currentMonthTotal;
+                bestMonthIndex = m;
             }
         }
         return months[bestMonthIndex];
     }
-
     public static int consecutiveLossDays(String comm) {
-        int commIndex = getCommodityIndex(comm);
-        if(commIndex == -1){
-            return -1;
-        }
-        int maxStreak = 0;
-        int currentStreak =0;
-
-        for(int m = 0;m<MONTHS;m++){
-            for(int d = 0;d<DAYS;d++){
-                currentStreak ++;
-                if(currentStreak > maxStreak){
-                    maxStreak = currentStreak;
-                }
-                else{
+        int index = getCommodityIndex(comm);
+        if (index == -1) return -1;
+        int maxStreak = 0, currentStreak = 0;
+        for (int m = 0; m < MONTHS; m++) {
+            for (int d = 0; d < DAYS; d++) {
+                if (allData[m][d][index] < 0) {
+                    currentStreak++;
+                    if (currentStreak > maxStreak){
+                        maxStreak = currentStreak;
+                    }
+                } else {
                     currentStreak = 0;
                 }
-
             }
         }
         return maxStreak;
     }
-
     public static int daysAboveThreshold(String comm, int threshold) {
-        int commIndex = getCommodityIndex(comm);
-        if(commIndex == -1){
+        int index = getCommodityIndex(comm);
+        if (index == -1){
             return -1;
         }
         int count = 0;
-        for(int m = 0;m<MONTHS;m++){
-            for(int d = 0;d<DAYS;d++){
-                if(allData[m][d][commIndex] >threshold ){
-                    count ++;
-
+        for (int m = 0; m < MONTHS; m++) {
+            for (int d = 0; d < DAYS; d++) {
+                if (allData[m][d][index] > threshold){
+                    count++;
                 }
-
             }
         }
         return count;
     }
-
-
     public static int biggestDailySwing(int month) {
-       if(month < 0 || month >= MONTHS){
-           return -99999;
-       }
-       int maxSwing = -1;
-       for(int d = 0; d<DAYS;d++){
-           int dailyMax = Integer.MIN_VALUE;
-           int dailyMin = Integer.MAX_VALUE;
-           for(int c = 0;c<COMMS;c++){
-               int profit = allData[month][d][c];
-
-               if(profit > dailyMax){
-                   dailyMax = profit;
-               }
-               if(profit < dailyMin){
-                   dailyMin = profit;
-               }
-           }
-           int currentSwing = dailyMax - dailyMin;
-           if(currentSwing > maxSwing){
-               maxSwing = currentSwing;
-           }
-       }
-       return maxSwing;
-
+        if (month < 0 || month >= MONTHS){
+            return -99999;
+        }
+        int maxSwing = -1;
+        for (int d = 0; d < DAYS; d++) {
+            int dailyMax = Integer.MIN_VALUE;
+            int dailyMin = Integer.MAX_VALUE;
+            for (int c = 0; c < COMMS; c++) {
+                int profit = allData[month][d][c];
+                if (profit > dailyMax){
+                    dailyMax = profit;
+                }
+                if (profit < dailyMin){
+                    dailyMin = profit;
+                }
+            }
+            int currentSwing = dailyMax - dailyMin;
+            if (currentSwing > maxSwing){
+                maxSwing = currentSwing;
+            }
+        }
+        return maxSwing;
     }
     public static String compareTwoCommodities(String c1, String c2) {
         int commindex1 = getCommodityIndex(c1);
         int commindex2 = getCommodityIndex(c2);
-        if(commindex1 == -1 || commindex2 == -1){
+        if (commindex1 == -1 || commindex2 == -1) {
             return "INVALID_COMMODITY";
         }
         long total1 = 0;
         long total2 = 0;
-
-        for(int m = 0; m< MONTHS;m++){
-            for(int d = 0; d<DAYS;d++){
-                total1 = allData[m][d][commindex1];
-                total2 = allData[m][d][commindex2];
+        for (int m = 0; m < MONTHS; m++) {
+            for (int d = 0; d < DAYS; d++) {
+                total1 += allData[m][d][commindex1];
+                total2 += allData[m][d][commindex2];
             }
         }
-        if(total1 > total2){
-            return c1 + " is better with " + (total1 - total2) + " difference";
-        }else if (total2 > total1){
-            return c2 + " is better with " + (total2 - total1) + " difference";
-        }else{
-            return "Equal";
+        if (total1 > total2){
+            return c1 + " is better by " + (total1 - total2);
         }
+        if (total2 > total1){
+            return c2 + " is better by " + (total2 - total1);
+        }
+        return "Both are equal";
     }
 
     public static String bestWeekOfMonth(int month) {
-        return "DUMMY";
+        if (month < 0 || month >= MONTHS){
+            return "INVALID_MONTH";
+        }
+        long[] weeklyProfits = new long[4];
+        for (int w = 0; w < 4; w++) {
+            int startDay = w * 7;
+            int endDay = startDay + 7;
+            for (int d = startDay; d < endDay; d++) {
+                for (int c = 0; c < COMMS; c++){
+                    weeklyProfits[w] += allData[month][d][c];
+                }
+            }
+        }
+        long maxW = Long.MIN_VALUE;
+        int bestW = -1;
+        for (int w = 0; w < 4; w++) {
+            if (weeklyProfits[w] > maxW) {
+                maxW = weeklyProfits[w];
+                bestW = w + 1;
+            }
+        }
+        return "Week " + bestW;
     }
 
     public static void main(String[] args) {
         loadData();
-        System.out.println("Data loaded – ready for queries");
     }
 }
