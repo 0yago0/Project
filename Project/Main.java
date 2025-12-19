@@ -20,7 +20,6 @@ public class Main {
         return -1;
     }
 
-    // ======== REQUIRED METHOD LOAD DATA (Students fill these) ========
     public static void loadData() {
         for (int m = 0; m < MONTHS; m++) {
             String filename = "Data_Files/" + months[m] + ".txt";
@@ -49,8 +48,6 @@ public class Main {
             }
         }
     }
-
-    // ======== 10 REQUIRED METHODS (Students fill these) ========
 
     // 1. O ay en çok kar eden emtia
     public static String mostProfitableCommodityInMonth(int month) {
@@ -189,23 +186,42 @@ public class Main {
         return count;
     }
 
+
     public static int biggestDailySwing(int month) {
-        return 1234;
-    }
+       if(month < 0 || month > MONTHS){
+           return -99999;
+       }
+       int maxSwing = -1;
+       for(int d = 0; d<DAYS;d++){
+           int dailyMax = Integer.MAX_VALUE;
+           int dailyMin = Integer.MIN_VALUE;
+           for(int c = 0;c<COMMS;c++){
+               int profit = allData[month][d][c];
 
+               if(profit > dailyMax){
+                   dailyMax = profit;
+               }
+               if(profit < dailyMin){
+                   dailyMin = profit;
+               }
+           }
+           int currentSwing = dailyMax - dailyMin;
+           if(currentSwing > maxSwing){
+               maxSwing = currentSwing;
+           }
+       }
+       return maxSwing;
+
+    }
     public static String compareTwoCommodities(String c1, String c2) {
-        return "DUMMY is better by 1234";
+        return "DUMMY";
     }
-
     public static String bestWeekOfMonth(int month) {
         return "DUMMY";
     }
 
-
     public static void main(String[] args) {
         loadData();
         System.out.println("Data loaded – ready for queries");
-
     }
-
 }
