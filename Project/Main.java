@@ -188,13 +188,13 @@ public class Main {
 
 
     public static int biggestDailySwing(int month) {
-       if(month < 0 || month > MONTHS){
+       if(month < 0 || month >= MONTHS){
            return -99999;
        }
        int maxSwing = -1;
        for(int d = 0; d<DAYS;d++){
-           int dailyMax = Integer.MAX_VALUE;
-           int dailyMin = Integer.MIN_VALUE;
+           int dailyMax = Integer.MIN_VALUE;
+           int dailyMin = Integer.MAX_VALUE;
            for(int c = 0;c<COMMS;c++){
                int profit = allData[month][d][c];
 
